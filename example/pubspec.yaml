@@ -17,6 +17,7 @@ dependencies:
   flutter:
     sdk: flutter
 
+  camera: ^0.11.1
   camera_control:
     # When depending on this package from a real application you should use:
     #   camera_control: ^x.y.z

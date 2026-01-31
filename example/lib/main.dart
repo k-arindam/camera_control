@@ -1,3 +1,4 @@
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -19,6 +20,8 @@ class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
   final _cameraControlPlugin = CameraControl();
 
+  CameraController? _controller;
+
   @override
   void initState() {
     super.initState();
@@ -32,7 +35,8 @@ class _MyAppState extends State<MyApp> {
     // We also handle the message potentially returning null.
     try {
       platformVersion =
-          await _cameraControlPlugin.getPlatformVersion() ?? 'Unknown platform version';
+          await _cameraControlPlugin.getPlatformVersion() ??
+          'Unknown platform version';
     } on PlatformException {
       platformVersion = 'Failed to get platform version.';
     }
@@ -42,20 +46,48 @@ class _MyAppState extends State<MyApp> {
     // setState to update our non-existent appearance.
     if (!mounted) return;
 
-    setState(() {
-      _platformVersion = platformVersion;
-    });
+    setState(() => _platformVersion = platformVersion);
+
+    final cameras = await availableCameras();
+
+    _controller = CameraController(cameras[0], ResolutionPreset.max);
+    _controller!
+        .initialize()
+        .then((_) {
+          if (!mounted) {
+            return;
+          }
+          setState(() {});
+          _cameraControlPlugin.attach();
+        })
+        .catchError((Object e) {
+          if (e is CameraException) {
+            switch (e.code) {
+              case 'CameraAccessDenied':
+                // Handle access errors here.
+                break;
+              default:
+                // Handle other errors here.
+                break;
+            }
+          }
+        });
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Plugin example app'),
-        ),
+        appBar: AppBar(title: const Text('Plugin example app')),
         body: Center(
-          child: Text('Running on: $_platformVersion\n'),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text('Running on: $_platformVersion\n'),
+              if (_controller != null) CameraPreview(_controller!),
+            ],
+          ),
         ),
       ),
     );

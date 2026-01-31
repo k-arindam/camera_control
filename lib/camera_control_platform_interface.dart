@@ -26,4 +26,8 @@ abstract class CameraControlPlatform extends PlatformInterface {
   Future<String?> getPlatformVersion() {
     throw UnimplementedError('platformVersion() has not been implemented.');
   }
+
+  Future<void> attach() {
+    throw UnimplementedError('attach() has not been implemented.');
+  }
 }
